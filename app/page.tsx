@@ -47,33 +47,19 @@ const Wordra: React.FC = () => {
     try {
       setGameStatus("loading");
 
-      const response = await fetch(
-        "https://api.datamuse.com/words?sp=?????&max=1000"
-      );
-      const data = await response.json();
+      const response = await fetch("/words.txt");
+      const text = await response.text();
 
-      if (data && data.length > 0) {
-        const words = data
-          .map((item: { word: string }) => item.word.toUpperCase())
-          .filter(
-            (word: string) =>
-              word.length === 5 &&
-              /^[A-Z]+$/.test(word) && // Only letters
-              !word.includes("-") && // No hyphens
-              !word.includes("'") // No apostrophes
-          );
+      const words = text
+        .split("\n")
+        .map((word) => word.trim().toUpperCase())
+        .filter((word) => word.length === 5 && /^[A-Z]+$/.test(word));
 
-        if (words.length > 50) {
-          setAvailableWords(words);
-          setValidWords(new Set([...words, ...COMMON_WORDS]));
-          setGameStatus("playing");
-          return;
-        }
-      }
-
-      throw new Error("Insufficient words from API");
+      setAvailableWords(words);
+      setValidWords(new Set([...words, ...COMMON_WORDS]));
+      setGameStatus("playing");
     } catch (error) {
-      console.error("Failed to fetch words:", error);
+      console.error("Failed to load word list:", error);
       setGameStatus("error");
     }
   }, []);
